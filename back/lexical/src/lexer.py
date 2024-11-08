@@ -1,5 +1,5 @@
 from src.dictionary import WordDict
-from src.tokens import TokenEnums
+from common.tokens import TokenEnums
 
 class LexerInterpreter:
 

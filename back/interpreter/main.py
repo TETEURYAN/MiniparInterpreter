@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from interpreter import Interpreter
+from interpreter.interpreter import Interpreter
 from syntax_tree import SyntaxNode
 import requests
 

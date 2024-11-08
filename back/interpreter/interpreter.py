@@ -1,5 +1,5 @@
-from semantic import SemanticAnalyzer  # Importa o módulo SemanticAnalyzer
-from _parser import Parser  # Importa o módulo Parser
+from semantic.semantic_analyzer import SemanticAnalyzer
+from syntactic.src.parser import Parser  # Importa o módulo Parser
 from enum_tokens import TokenEnums as en  # Importa TokenEnums do módulo enum_tokens
 import json  # Importa o módulo JSON para manipulação de dados JSON
 import threading  # Importa o módulo threading para concorrência
