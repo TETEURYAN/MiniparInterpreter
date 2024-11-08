@@ -1,4 +1,4 @@
-from tokens import TokenEnums as en
+from src.tokens import TokenEnums as en
 
 
 class WordDict:

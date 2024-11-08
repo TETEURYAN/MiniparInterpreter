@@ -1,26 +1,26 @@
-from flask import Flask, request, jsonify
-from src.lexer import LexerInterpreter
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from lexer import Lexer
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/tokenize', methods=['POST'])
-def tokenize():
-    # Pega o texto enviado na requisição
-    data = request.get_json()
-    if not data or 'text' not in data:
-        return jsonify({'error': 'Missing "text" field in the request'}), 400
+class CodeInput(BaseModel):
+    code: str
 
-    text = data['text']
-    lexer = LexerInterpreter(text)
+@app.post("/lex")
+def lex_code(input_data: CodeInput):
+    try:
+        lexer = Lexer(input_data.code)
+        tokens = []
+        token = lexer.get_next_token()
 
-    # Gera a lista de tokens
-    tokens = lexer.get_next_token()
+        # Processa tokens até encontrar o "EOF"
+        while token[0] != "EOF":
+            tokens.append(token)
+            token = lexer.get_next_token()
 
-    # Formata os tokens como uma lista de dicionários
-    tokens_list = [{'type': token[0], 'value': token[1]} for token in tokens]
+        return {"tokens": tokens}
     
-    return jsonify(tokens_list)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    except Exception as e:
+        # Se houver algum erro durante o processo de lexing, retorna uma mensagem de erro
+        raise HTTPException(status_code=400, detail=f"Error during lexing: {str(e)}")
