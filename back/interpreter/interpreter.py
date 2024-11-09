@@ -1,22 +1,24 @@
+import json  # Importa o módulo JSON para manipulação de dados JSON
+import socket  # Importa o módulo socket para comunicação em rede
+import threading  # Importa o módulo threading para concorrência
+
+from common.tokens import TokenEnums as en  # Importa TokenEnums do módulo enum_tokens
 from semantic.semantic_analyzer import SemanticAnalyzer
 from syntactic.src.parser import Parser  # Importa o módulo Parser
-from enum_tokens import TokenEnums as en  # Importa TokenEnums do módulo enum_tokens
-import json  # Importa o módulo JSON para manipulação de dados JSON
-import threading  # Importa o módulo threading para concorrência
-import socket  # Importa o módulo socket para comunicação em rede
+
 
 def _calculate(num1, operator, num2):
     """
     Função para realizar cálculos aritméticos básicos.
     """
     result = 0
-    if operator == '+':
-        result =  float(num1) + float(num2)
-    elif operator == '-':
+    if operator == "+":
+        result = float(num1) + float(num2)
+    elif operator == "-":
         result = float(num1) - float(num2)
-    elif operator == '*':
+    elif operator == "*":
         result = float(num1) * float(num2)
-    elif operator == '/':
+    elif operator == "/":
         if num2 != 0:
             result = float(num1) / float(num2)
         else:
@@ -25,14 +27,15 @@ def _calculate(num1, operator, num2):
         return "Error: Invalid operator!"
     return result
 
+
 def c_channel(host, type):
     """
     Função para criar canais de soquete cliente ou servidor com base no tipo fornecido.
     """
-    this_addr = (host, 5546) # Número da porta para comunicação
-    size = 1024 # Tamanho do buffer para receber dados
-    format = "utf-8" # Formato de codificação para dados de string
-    procedure = None # Espaço reservado para o procedimento a ser executado
+    this_addr = (host, 5546)  # Número da porta para comunicação
+    size = 1024  # Tamanho do buffer para receber dados
+    format = "utf-8"  # Formato de codificação para dados de string
+    procedure = None  # Espaço reservado para o procedimento a ser executado
 
     if type == "server":
         # Criando um soquete do servidor
@@ -51,7 +54,7 @@ def c_channel(host, type):
                     conn.send("What procedure do you wish to execute?".encode(format))
                     first = False
 
-                a = conn.recv(size).decode(format) # Recebendo dados do cliente
+                a = conn.recv(size).decode(format)  # Recebendo dados do cliente
                 print(f"[SERVER] Received command: {a} from {addr}")
                 if a == "exit":
                     break
@@ -65,25 +68,33 @@ def c_channel(host, type):
                     print(f"[SERVER] Received expression: {a} from {addr}")
                     a = a.replace("Expression: ", "")
                     a = a.split()
-                    result = _calculate(a[0],a[1],a[2]) # Realizando cálculo
+                    result = _calculate(a[0], a[1], a[2])  # Realizando cálculo
                     message = f"Result: {result}"
-                    conn.send(message.encode("ascii")) # Enviando resultado de volta para o cliente
+                    conn.send(
+                        message.encode("ascii")
+                    )  # Enviando resultado de volta para o cliente
                     break
                 else:
-                    conn.send("Invalid command".encode("ascii")) # Lidando com comandos inválidos
+                    conn.send(
+                        "Invalid command".encode("ascii")
+                    )  # Lidando com comandos inválidos
         finally:
-            server.close() # Fechando soquete do servidor ao finalizar
+            server.close()  # Fechando soquete do servidor ao finalizar
 
     elif type == "client":
         # Criando um soquete do cliente
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect(this_addr) # Conectando ao servidor
-        message = client.recv(size).decode(format) # Recebendo mensagem do servidor
+        client.connect(this_addr)  # Conectando ao servidor
+        message = client.recv(size).decode(format)  # Recebendo mensagem do servidor
         print(f"Message from server: {message}")
-        procedure = input("Enter the procedure you wish to execute: ") # Enviando procedimento para o servidor
-        client.send(procedure.encode(format)) # Recebendo mensagem do servidor
+        procedure = input(
+            "Enter the procedure you wish to execute: "
+        )  # Enviando procedimento para o servidor
+        client.send(procedure.encode(format))  # Recebendo mensagem do servidor
         while True:
-            message = client.recv(size).decode(format) # Enviando expressão para o servidor
+            message = client.recv(size).decode(
+                format
+            )  # Enviando expressão para o servidor
             print(f"Message from server: {message}")
 
             if message == "Awaiting expression...":
@@ -96,7 +107,8 @@ def c_channel(host, type):
             elif message.startswith("Result"):
                 print(f"{message}")
                 break
-        client.close() # Fechando soquete do cliente ao finalizar
+        client.close()  # Fechando soquete do cliente ao finalizar
+
 
 def par_block(block):
     """
@@ -117,12 +129,15 @@ class Interpreter:
     """
     Classe que representa um interpretador para uma linguagem de programação.
     """
+
     def __init__(self, program, export=False):
         self.program = program  # Código do programa a ser interpretado
         self.semantic = SemanticAnalyzer()  # Instância do analisador semântico
         self.parser = Parser(program)  # Instância do analisador
         self.output = []  # Saída gerada durante a interpretação
-        self.export = export  # Sinalizador indicando se os resultados devem ser exportados
+        self.export = (
+            export  # Sinalizador indicando se os resultados devem ser exportados
+        )
         self.tree = None  # Árvore de sintaxe abstrata gerada durante o parsing
 
     def run(self):

@@ -1,4 +1,4 @@
-from src.tokens import TokenEnums as en
+from lexical.src.tokens import TokenEnums as en
 
 
 class WordDict:
