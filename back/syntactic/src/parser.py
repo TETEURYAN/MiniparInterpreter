@@ -1,22 +1,23 @@
-from trees.syntax_tree import SyntaxNode
 from common.tokens import TokenEnums as en
-from lexer import LexerInterpreter
+from trees.syntax_tree import SyntaxNode
 
 
 class Parser:
     # Inicializador da classe Parser
-    def __init__(self, file):
-        self.lexer = Lexer(file)
-        self.current_token = self.lexer.get_next_token()
-    
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.current_token_index = 0
+        self.current_token = self.tokens[self.current_token_index]
+
     # Função principal de análise sintática
     def parse(self):
         syntax_tree = self.parse_program()
         return syntax_tree
-    
+
     # Analisa um programa
     def parse_program(self):
         syntax_tree = SyntaxNode(en.PROGRAM)
+
         while self.current_token[0] != en.EOF:
             if self.current_token[0] == en.ID:
                 assignment_node = self.parse_assignment()
@@ -35,11 +36,11 @@ class Parser:
                 en.RW_PAR,
             ):
                 statement_node = self.parse_statement()
-
                 syntax_tree.add_children(statement_node)
             else:
                 raise SyntaxError(f"Unexpected token: {self.current_token[0]}")
         return syntax_tree
+
     # Analisa uma declaração
     def parse_declaration(self):
         token = self.current_token
@@ -65,7 +66,7 @@ class Parser:
         declaration_node.add_children(assignment_node)
 
         return declaration_node
-   
+
     # Analisa um bloco de código delimitado por chaves { }
     def parse_block(self):
         block_node = SyntaxNode(en.BLOCK)
@@ -124,7 +125,6 @@ class Parser:
             if_node.add_children(else_block)
         return if_node
 
-      
     def parse_chan_send(self):
         # chan_send(chan, v1, v2);
         self.eat(en.RW_CHAN_SEND)
@@ -148,7 +148,7 @@ class Parser:
         recv_node.add_children(params[2])
         recv_node.add_children(params[3])
         self.eat(en.DL_SEMICOLON)
-       
+
     # Analisa uma instrução WHILE
     def parse_while_statement(self):
         self.eat(en.RW_WHILE)
@@ -241,7 +241,7 @@ class Parser:
         input_node.add_children(params[0])
         self.eat(en.DL_SEMICOLON)
         return input_node
-    
+
     # Analisa uma instrução de impressão
     def parse_print(self):
         self.eat(en.RW_PRINT)
@@ -256,7 +256,7 @@ class Parser:
         self.eat(en.DL_RPAREN)
         self.eat(en.DL_SEMICOLON)
         return print_node
-    
+
     # Analisa uma instrução de atribuição
     def parse_assignment(self):
         identifier = self.current_token
@@ -321,7 +321,7 @@ class Parser:
             operator_node.add_children(self.parse_term())
             node = operator_node
         return node
-    
+
     # Analisa um termo
     def parse_term(self):
         node = self.parse_factor()
@@ -346,7 +346,7 @@ class Parser:
             node = operator_node
 
         return node
-    
+
     # Analisa um fator
     def parse_factor(self):
         token = self.current_token
@@ -374,11 +374,15 @@ class Parser:
             raise SyntaxError(
                 f"Invalid factor: {token[0]}, expected an identifier, integer, or expression"
             )
-        
+
     # Consome um token
     def eat(self, token_type):
         if self.current_token[0] == token_type:
-            self.current_token = self.lexer.get_next_token()
+            self.current_token_index += 1
+            if self.current_token_index < len(self.tokens):
+                self.current_token = self.tokens[self.current_token_index]
+            else:
+                self.current_token = (en.EOF, None)
         elif self.current_token[0] == en.EOF:
             raise SyntaxError(f"Unexpected end of file: expected {token_type}")
         else:
