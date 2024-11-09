@@ -1,3 +1,4 @@
+from common.tokens import TokenEnums
 from fastapi import FastAPI, HTTPException
 from lexical.src.lexer import LexerInterpreter
 from pydantic import BaseModel
@@ -17,7 +18,7 @@ def lex_code(input_data: CodeInput):
         token = lexer.get_next_token()
 
         # Processa tokens até encontrar o "EOF"
-        while token[0] != "EOF":
+        while token[0] != TokenEnums.EOF:
             tokens.append(token)
             token = lexer.get_next_token()
 

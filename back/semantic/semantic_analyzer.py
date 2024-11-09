@@ -4,7 +4,7 @@ from trees.syntax_tree import SyntaxNode
 
 
 class SemanticAnalyzer:
-     # Inicializa o ambiente global e local, e define o tipo e o escopo atuais como nulos
+    # Inicializa o ambiente global e local, e define o tipo e o escopo atuais como nulos
     def __init__(self):
         self.global_env = {}
         self.local_envs = [{}]
@@ -80,14 +80,13 @@ class SemanticAnalyzer:
     def visit_RW_STRING(self, node):
         self.current_type = en.RW_STRING
         self.visit_children(node)
-    
+
     # Função visit_RW_C_CHANNEL: define o tipo atual canal de conexão entre dois computadores e retorna um nó de sintaxe
     def visit_RW_C_CHANNEL(self, node):
         self.current_type = en.RW_C_CHANNEL
         self.visit_children(node)
 
         return SyntaxNode(en.RW_C_CHANNEL, None)
-    
 
         return node
 
@@ -97,7 +96,7 @@ class SemanticAnalyzer:
         value = self.visit(node.children[0]).value
         if value is None:
             raise Exception("ValueError: cannot print None")
-    
+
     # Função visit_RW_INPUT: visita um nó de entrada
     def visit_RW_INPUT(self, node):
         value = self.visit(node.children[0])
@@ -156,7 +155,7 @@ class SemanticAnalyzer:
         if isinstance(node.value, int):
             return SyntaxNode(en.RW_INT, node.value)
         raise Exception("Type error: expected integer")
-    
+
     # Função visit_STRING_LITERAL: visita um nó literal de string
     def visit_STRING_LITERAL(self, node):
         if isinstance(node.value, str):
@@ -168,38 +167,38 @@ class SemanticAnalyzer:
     def visit_BLOCK(self, node):
 
         prev_global_env = self.global_env.copy()
-        
+
         # Entra em um novo escopo e visita todas as declarações ou comandos dentro do bloco
         self.enter_scope()
         for statement_node in node.children:
             self.visit(statement_node)
         self.exit_scope()
-        
+
         # Atualiza as variáveis globais se elas tiverem sido modificadas dentro do bloco
         for name, value in self.global_env.items():
             if name not in prev_global_env or prev_global_env[name] != value:
                 self.update_global_variable(name, value)
-    
+
     # Função visit_OP_MULTIPLY: visita um nó de multiplicação
     def visit_OP_MULTIPLY(self, node):
         op = self.get_operands(node)
         return SyntaxNode(en.NUM, op["left"] * op["right"])
-    
+
     # Função visit_OP_DIVIDE: visita um nó de divisão
     def visit_OP_DIVIDE(self, node):
         op = self.get_operands(node)
         return SyntaxNode(en.NUM, op["left"] / op["right"])
-    
+
     # Função visit_OP_PLUS: visita um nó de adição
     def visit_OP_PLUS(self, node):
         op = self.get_operands(node)
         return SyntaxNode(en.NUM, op["left"] + op["right"])
-    
+
     # Função visit_OP_MINUS: visita um nó de subtração
     def visit_OP_MINUS(self, node):
         op = self.get_operands(node)
         return SyntaxNode(en.NUM, op["left"] - op["right"])
-    
+
     # Função visit_RW_PAR: visita um parêntese
     def visit_RW_PAR(self, node):
         self.enter_scope()
@@ -218,13 +217,13 @@ class SemanticAnalyzer:
         init = self.visit(node.children[0])
         condition_node = self.visit(node.value)
         increment = self.visit(node.children[1])
-        
+
         # Converte os nós de inicialização e incremento em números se necessário
         if init.node_type is not None and init.node_type == en.NUM:
             init = self.visit(init)
         if increment.node_type == en.NUM:
             increment = self.visit(increment)
-        
+
         # Verifica se a condição é booleana e se os tipos de inicialização e incremento são inteiros
         if not condition_node == en.RW_BOOL:
             raise Exception("Type error: condition must be boolean")
@@ -235,10 +234,10 @@ class SemanticAnalyzer:
                 init.node_type,
                 increment.node_type,
             )
-        
+
         # Visita o corpo do laço 'for'
         self.visit(node.children[2])
-        
+
         # Sai do escopo do laço 'for'
         self.exit_scope()
 
@@ -248,18 +247,18 @@ class SemanticAnalyzer:
         block_node = node.children[0]
 
         condition_value = self.visit(condition_node).value
-        
+
         # Se a condição for verdadeira, entra em um novo escopo e visita o bloco
         if condition_value:
             self.enter_scope()
             self.visit(block_node)
             self.exit_scope()
-   
+
     # Função visit_comparison: visita um nó de comparação
     def visit_comparison(self, node):
         left = self.visit(node.children[0])
         right = self.visit(node.children[1])
-        
+
         # Se os tipos dos operandos forem iguais, retorna booleano
         if left.node_type == right.node_type:
             return en.RW_BOOL

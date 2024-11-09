@@ -5,6 +5,7 @@ import threading  # Importa o módulo threading para concorrência
 from common.tokens import TokenEnums as en  # Importa TokenEnums do módulo enum_tokens
 from semantic.semantic_analyzer import SemanticAnalyzer
 from syntactic.src.parser import Parser  # Importa o módulo Parser
+from trees.syntax_tree import SyntaxNode
 
 
 def _calculate(num1, operator, num2):
@@ -130,26 +131,29 @@ class Interpreter:
     Classe que representa um interpretador para uma linguagem de programação.
     """
 
-    def __init__(self, program, export=False):
-        self.program = program  # Código do programa a ser interpretado
+    def __init__(self, tree: SyntaxNode | None = None, export=False):
         self.semantic = SemanticAnalyzer()  # Instância do analisador semântico
-        self.parser = Parser(program)  # Instância do analisador
         self.output = []  # Saída gerada durante a interpretação
         self.export = (
             export  # Sinalizador indicando se os resultados devem ser exportados
         )
-        self.tree = None  # Árvore de sintaxe abstrata gerada durante o parsing
+        self.tree = tree  # Árvore de sintaxe abstrata gerada durante o parsing
 
     def run(self):
         """
         Método para executar o programa interpretado.
         """
-        self.tree = self.parser.parse()
         self.tree.print_tree()
         if self.export:
             self.save_tree()
         self.semantic.visit(self.tree)
-        exec(self.tree.evaluate())
+
+        evalueted_tree = self.tree.evaluate()
+
+        print("Evalueted Tree:")
+        print(evalueted_tree)
+
+        exec(evalueted_tree)
         if self.export:
             self.save_tree()
         return self.output

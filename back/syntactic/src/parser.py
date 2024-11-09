@@ -1,13 +1,13 @@
 from common.tokens import TokenEnums as en
-from lexical.src.lexer import LexerInterpreter
 from trees.syntax_tree import SyntaxNode
 
 
 class Parser:
     # Inicializador da classe Parser
-    def __init__(self, file):
-        self.lexer = LexerInterpreter(file)
-        self.current_token = self.lexer.get_next_token()
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.current_token_index = 0
+        self.current_token = self.tokens[self.current_token_index]
 
     # Função principal de análise sintática
     def parse(self):
@@ -17,6 +17,7 @@ class Parser:
     # Analisa um programa
     def parse_program(self):
         syntax_tree = SyntaxNode(en.PROGRAM)
+
         while self.current_token[0] != en.EOF:
             if self.current_token[0] == en.ID:
                 assignment_node = self.parse_assignment()
@@ -35,7 +36,6 @@ class Parser:
                 en.RW_PAR,
             ):
                 statement_node = self.parse_statement()
-
                 syntax_tree.add_children(statement_node)
             else:
                 raise SyntaxError(f"Unexpected token: {self.current_token[0]}")
@@ -378,7 +378,11 @@ class Parser:
     # Consome um token
     def eat(self, token_type):
         if self.current_token[0] == token_type:
-            self.current_token = self.lexer.get_next_token()
+            self.current_token_index += 1
+            if self.current_token_index < len(self.tokens):
+                self.current_token = self.tokens[self.current_token_index]
+            else:
+                self.current_token = (en.EOF, None)
         elif self.current_token[0] == en.EOF:
             raise SyntaxError(f"Unexpected end of file: expected {token_type}")
         else:
