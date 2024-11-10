@@ -1,5 +1,5 @@
 from common.tokens import TokenEnums as en
-import json
+
 
 class SyntaxNode:
     # Inicializa um nó da árvore sintática com um tipo de nó e um valor opcional
@@ -23,7 +23,7 @@ class SyntaxNode:
 
         for child in self.children:
             child.print_tree(level + 1)
-    
+
     # Converte o nó da árvore sintática em JSON
     def to_json(self):
         def convert_enum_to_str(value):
@@ -44,12 +44,14 @@ class SyntaxNode:
 
     # Avalia a árvore sintática e gera código Python correspondente
     def evaluate(self, indent_level=0):
-        indent = "    " * indent_level
+        indent = "    " * indent_level  # Quatro espaços por nível de indentação
+
         if self.node_type == en.PROGRAM:
             code = ""
             for child in self.children:
                 code += child.evaluate(indent_level) + "\n"
             return code
+
         if self.node_type in [en.RW_INT, en.RW_STRING]:
             output = ""
             for child in self.children:
@@ -60,10 +62,9 @@ class SyntaxNode:
             variable = self.children[0].value
             expression = self.children[1]
             return f"{indent}{variable} = {expression.evaluate()}"
-        
+
         # Operações aritméticas
         elif self.node_type in [en.OP_PLUS, en.OP_MINUS, en.OP_MULTIPLY, en.OP_DIVIDE]:
-
             left = self.children[0].evaluate()
             right = self.children[1].evaluate()
 
@@ -78,11 +79,11 @@ class SyntaxNode:
                     return f"({left} / {right})"
                 case _:
                     raise ValueError(f"Invalid node_type enum {self.node_type}")
-        
+
         # Identificador
         elif self.node_type == en.ID:
             return self.value
-        
+
         # Número
         elif self.node_type == en.NUM:
             return str(self.value)
@@ -90,16 +91,16 @@ class SyntaxNode:
         # Literal de string
         elif self.node_type == en.STRING_LITERAL:
             return f'"{self.value}"'
-        
+
         # Loop for
         elif self.node_type == en.RW_FOR:
             init = self.children[0].evaluate()
             condition = self.value.evaluate()
             increment = self.children[1].evaluate(indent_level + 1)
-            block = self.children[2].evaluate()
-            return f"{indent}{init}\nwhile {condition}:\n{increment}\n{block}"
-        
-        # Estrutura de controle if        
+            block = self.children[2].evaluate(indent_level + 1)
+            return f"{indent}{init}\n{indent}while {condition}:\n{increment}\n{block}"
+
+        # Estrutura de controle if
         elif self.node_type == en.RW_IF:
             condition = self.value.evaluate()
             block_true = self.children[0].evaluate(indent_level + 1)
@@ -117,7 +118,7 @@ class SyntaxNode:
             for child in self.children:
                 block_code += child.evaluate(indent_level + 1) + "\n"
             return f"{block_code}"
-        
+
         # Impressão
         elif self.node_type == en.RW_PRINT:
             expression = ""
@@ -134,6 +135,7 @@ class SyntaxNode:
             variable = self.children[0].evaluate()
             return f"{indent}{variable} = input()"
 
+        # Operações de comparação
         elif self.node_type in [
             en.OP_GT,
             en.OP_LT,
@@ -142,7 +144,6 @@ class SyntaxNode:
             en.OP_EQ,
             en.OP_NE,
         ]:
-            # Operações de comparação
             left = self.children[0].evaluate()
             right = self.children[1].evaluate()
             if self.node_type == en.OP_GT:
@@ -166,13 +167,12 @@ class SyntaxNode:
 
         # Paralelismo
         elif self.node_type == en.RW_PAR:
-
-            block = self.children[0].evaluate(indent_level - 1)
-            return f"par_block({[block]})"
+            block_code = self.children[0].evaluate(indent_level + 1).strip()
+            return f"{indent}par_block(['''{block_code}'''])"
 
         # Sequencial
         elif self.node_type == en.RW_SEQ:
-            block = self.children[0].evaluate(indent_level - 1)
+            block = self.children[0].evaluate(indent_level)
             return f"{indent}{block}"
 
         # Canal de comunicação
@@ -182,3 +182,24 @@ class SyntaxNode:
             return f"{indent}c_channel({host}, {type})\n"
         else:
             raise ValueError(f"Invalid node_type enum {self.node_type}")
+
+    @classmethod
+    def from_dict(cls, node_dict) -> "SyntaxNode":
+        def convert_str_to_enum(value):
+            if isinstance(value, str) and hasattr(en, value):
+                return getattr(en, value)
+
+            return value
+
+        node_type = convert_str_to_enum(node_dict["node_type"])
+        value = node_dict["value"]
+        if isinstance(value, dict):
+            value = cls.from_dict(value)
+        else:
+            value = convert_str_to_enum(value) if value != "--" else None
+
+        node = cls(node_type, value)
+        for child_dict in node_dict["children"]:
+            child_node = cls.from_dict(child_dict)
+            node.add_children(child_node)
+        return node
