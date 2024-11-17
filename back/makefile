@@ -32,7 +32,7 @@ run-all:
 	@make run-lexer &
 	@make run-semantic &
 	@make run-syntactic &
-	@make run-orchestrator
+	# @make run-orchestrator
 
 # Instala as dependências
 install:

@@ -45,9 +45,10 @@ class SyntaxNode:
     # Avalia a árvore sintática e gera código Python correspondente
     def evaluate(self, indent_level=0):
         indent = "    " * indent_level  # Quatro espaços por nível de indentação
+        newline = "\n" if indent_level == 0 else ""
 
         if self.node_type == en.PROGRAM:
-            code = ""
+            code = newline
             for child in self.children:
                 code += child.evaluate(indent_level) + "\n"
             return code
@@ -116,8 +117,9 @@ class SyntaxNode:
         elif self.node_type == en.BLOCK:
             block_code = ""
             for child in self.children:
-                block_code += child.evaluate(indent_level + 1) + "\n"
-            return f"{block_code}"
+                # Não incrementar o nível de indentação aqui, pois já está sendo considerado nos nós pai (como while, if).
+                block_code += child.evaluate(indent_level) + "\n"
+            return block_code.rstrip()
 
         # Impressão
         elif self.node_type == en.RW_PRINT:
@@ -168,7 +170,26 @@ class SyntaxNode:
         # Paralelismo
         elif self.node_type == en.RW_PAR:
             block_code = self.children[0].evaluate(indent_level + 1).strip()
-            return f"{indent}par_block(['''{block_code}'''])"
+            indent = "    " * indent_level
+
+            lines = block_code.splitlines()
+            st = "    " + lines[0]
+            lines[0] = st
+            # Calcula a indentação mínima considerando apenas linhas não vazias
+            min_indent = min((len(line) - len(line.lstrip())) for line in lines if line.strip())
+
+            # Remove a indentação mínima global, preservando a indentação relativa
+            normalized_block = "\n".join(
+                [(line[min_indent:] if line.strip() else "") for line in lines]
+            )
+
+
+#             for i in lines:
+#                 i.replace("    ", "")
+            # print("BLOCO NORMALIZADO: ",normalized_block)
+            # Retorna o código formatado dentro de par_block
+            return f"{indent}par_block(['''\n{normalized_block}\n{indent}'''])"
+
 
         # Sequencial
         elif self.node_type == en.RW_SEQ:

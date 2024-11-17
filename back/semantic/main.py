@@ -10,12 +10,14 @@ class SyntaxTreeInput(BaseModel):
     syntax_tree: dict
 
 
-@app.post("/analyze")
+@app.post("/semantic")
 def analyze_semantics(input_data: SyntaxTreeInput):
     try:
+
         # Converte o JSON de entrada em uma árvore sintática
         root = SyntaxNode.from_dict(input_data.syntax_tree)
 
+        print("ROOT: ", root)
         # Cria o analisador semântico
         analyzer = SemanticAnalyzer()
 

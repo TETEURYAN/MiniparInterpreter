@@ -16,16 +16,22 @@ def compile_code(code: str, export: bool):
         "http://localhost:8004/parse",
         json={"tokens": tokens},
     )
+
+    print("TOKENS: ", tokens)
     if syntactic_response.status_code != 200:
         raise Exception("Erro ao obter a árvore sintática do serviço sintático")
 
     syntax_tree = syntactic_response.json()["syntax_tree"]
 
+    print("ÁRVORE SINTÁTIVA: ", syntax_tree)
+
     # 3. Chama o serviço de análise semântica
     semantic_response = requests.post(
-        "http://localhost:8003/analyze",
+        "http://localhost:8002/semantic",
         json={"syntax_tree": syntax_tree},
     )
+
+    print("ANÁLISE SEMÂNTICA: ", semantic_response  )
     if semantic_response.status_code != 200:
         raise Exception("Erro na análise semântica")
 

@@ -7,6 +7,9 @@ from semantic.semantic_analyzer import SemanticAnalyzer
 from syntactic.src.parser import Parser  # Importa o módulo Parser
 from trees.syntax_tree import SyntaxNode
 
+import io
+import contextlib
+
 
 def _calculate(num1, operator, num2):
     """
@@ -150,13 +153,22 @@ class Interpreter:
 
         evalueted_tree = self.tree.evaluate()
 
-        print("Evalueted Tree:")
-        print(evalueted_tree)
+        # Criar um buffer para capturar a saída
+        buffer = io.StringIO()
 
-        exec(evalueted_tree)
+        print("ÁRVORE: ", evalueted_tree)
+        # Redirecionar a saída padrão para o buffer
+        with contextlib.redirect_stdout(buffer):
+            exec(evalueted_tree)
+
+        # Obter a saída capturada
+        saida = buffer.getvalue()
+
+        # Atualiza o self.output com o resultado do exec()
+
         if self.export:
             self.save_tree()
-        return self.output
+        return saida
 
     def save_tree(self):
         """
