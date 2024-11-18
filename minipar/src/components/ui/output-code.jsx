@@ -31,7 +31,10 @@ const OutputCode = ({ editorRef, output}) => {
             <Text
                 bg={'#27272a'}
                 h={'65vh'}
-                p={2}>
+                p={2}
+                overflowY="auto"
+                whiteSpace="pre-wrap"
+            >
                 {output ? output : 'Press "Submit" and the output will be displayed here.'}
             </Text>
         </div>
