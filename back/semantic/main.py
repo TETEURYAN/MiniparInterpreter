@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from semantic import SemanticAnalyzer
+from semantic.src.semantic_analyzer import SemanticAnalyzer
 from trees.syntax_tree import SyntaxNode
 
 app = FastAPI()

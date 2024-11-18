@@ -1,35 +1,50 @@
 import requests
 from fastapi import FastAPI
-from interpreter.interpreter import Interpreter
+from interpreter.src.interpreter import Interpreter
 from pydantic import BaseModel
 from trees.syntax_tree import SyntaxNode
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class InterpreterInput(BaseModel):
+    code: str
     export: bool = False
 
 
 @app.post("/interpret")
 def interpret_code(input_data: InterpreterInput):
     # Solicita a árvore sintática ao microsserviço de árvore sintática
+    print(input_data.code)
+
     try:
 
         test_text = """
         PAR{
-c_channel("localhost", "client", "localhost");
-}
+            int i = 1;
+            int resultado = 1;
 
-PAR{
-c_channel("localhost", "server", "localhost");
-}
+            for(i = 1; i < 10; i = i+1){
+                resultado = resultado * i;
+            }
+
+            print(resultado);
+        }
+
         """
 
      
         reponse_lexical = requests.post(
             "http://localhost:8001/lex",
-            json={"code": test_text},
+            json={"code": input_data.code},
         )
 
         if reponse_lexical.status_code != 200:

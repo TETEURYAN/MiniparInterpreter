@@ -6,6 +6,7 @@ import OutputCode from './output-code';
 const CodeEditor = () => {
     const editorRef = useRef();
     const [value, setValue] = useState('');
+    const [output, setOutput] = useState('');
     const [submit, setSubmit] = useState(false);
 
     const onMount = (editor) => {
@@ -13,9 +14,21 @@ const CodeEditor = () => {
         editor.focus();
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async() => {
         console.log('Submit');
+        const headers = new Headers()
+        headers.append("Content-Type", "application/json")
+        setOutput("Executando o microsserviço interpretador. . . ");
+        const response = await fetch("http://localhost:8000/interpret",{body: JSON.stringify({code: value, export: false}), method:"POST", headers})
+        const data = await response.json();
+        if(data.status == "error"){
+            setOutput(data.message);
+        }else{
+            setOutput(data.output);
+        }
         setSubmit(true);
+        console.log(data);
+        console.log(response)
     }
 
     // TODO? ADJUST SYNTAX HIGHLIGHTING https://github.com/tatomyr/estimate-it/blob/master/src/components/Estimate/Editor.js this guy does thit
@@ -45,7 +58,7 @@ const CodeEditor = () => {
                     </Button>
                 </Box>
                 <Box w={'50%'} bg={'gray.900'} borderRadius={10} p={4}>
-                <OutputCode editorRef={editorRef} submit={setSubmit}/>
+                <OutputCode editorRef={editorRef} output={output}/>
 
                 </Box>
             </HStack>

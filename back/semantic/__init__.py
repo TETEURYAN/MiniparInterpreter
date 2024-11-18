@@ -1,1 +1,1 @@
-from .semantic_analyzer import SemanticAnalyzer
+from semantic.src.semantic_analyzer import SemanticAnalyzer

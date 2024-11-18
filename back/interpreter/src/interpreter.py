@@ -3,7 +3,7 @@ import socket  # Importa o módulo socket para comunicação em rede
 import threading  # Importa o módulo threading para concorrência
 
 from common.tokens import TokenEnums as en  # Importa TokenEnums do módulo enum_tokens
-from semantic.semantic_analyzer import SemanticAnalyzer
+from semantic.src.semantic_analyzer import SemanticAnalyzer
 from syntactic.src.parser import Parser  # Importa o módulo Parser
 from trees.syntax_tree import SyntaxNode
 
@@ -35,22 +35,21 @@ def _calculate(num1, operator, num2):
 def c_channel(host, type):
     """
     Função para criar canais de soquete cliente ou servidor com base no tipo fornecido.
+    A entrada é agora passada por parâmetros, sem a necessidade de usar input().
     """
-    this_addr = (host, 5546)  # Número da porta para comunicação
-    size = 1024  # Tamanho do buffer para receber dados
-    format = "utf-8"  # Formato de codificação para dados de string
-    procedure = None  # Espaço reservado para o procedimento a ser executado
+    this_addr = (host, 5546)
+    size = 1024
+    format = "utf-8"
+    procedure = None
 
     if type == "server":
-        # Criando um soquete do servidor
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind(this_addr)  # Vinculando o servidor ao endereço
-        server.listen()  # Aguardando conexões de entrada
+        server.bind(this_addr)
+        server.listen()
         print("[SERVER] Waiting for connections...")
         first = True
         op = False
-        print("Waiting for connections...")
-        conn, addr = server.accept()  # Aceitando conexão do cliente
+        conn, addr = server.accept()
         try:
             while True:
                 if first:
@@ -58,61 +57,52 @@ def c_channel(host, type):
                     conn.send("What procedure do you wish to execute?".encode(format))
                     first = False
 
-                a = conn.recv(size).decode(format)  # Recebendo dados do cliente
+                a = conn.recv(size).decode(format)
                 print(f"[SERVER] Received command: {a} from {addr}")
                 if a == "exit":
                     break
 
-                elif a == "calculadora" and op == False:
+                elif a == "calculadora" and not op:
                     op = True
                     procedure = a
-                    conn.send("Awaiting expression...".encode("ascii"))
+                    conn.send("Awaiting expression...".encode(format))
 
                 elif a.startswith("Expression:"):
                     print(f"[SERVER] Received expression: {a} from {addr}")
-                    a = a.replace("Expression: ", "")
-                    a = a.split()
-                    result = _calculate(a[0], a[1], a[2])  # Realizando cálculo
+                    a = a.replace("Expression: ", "").split()
+                    result = _calculate(a[0], a[1], a[2])
                     message = f"Result: {result}"
-                    conn.send(
-                        message.encode("ascii")
-                    )  # Enviando resultado de volta para o cliente
+                    conn.send(message.encode("ascii"))
                     break
                 else:
-                    conn.send(
-                        "Invalid command".encode("ascii")
-                    )  # Lidando com comandos inválidos
+                    conn.send("Invalid command".encode("ascii"))
         finally:
-            server.close()  # Fechando soquete do servidor ao finalizar
+            server.close()
 
     elif type == "client":
-        # Criando um soquete do cliente
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect(this_addr)  # Conectando ao servidor
-        message = client.recv(size).decode(format)  # Recebendo mensagem do servidor
+        client.connect(this_addr)
+        message = client.recv(size).decode(format)
         print(f"Message from server: {message}")
-        procedure = input(
-            "Enter the procedure you wish to execute: "
-        )  # Enviando procedimento para o servidor
-        client.send(procedure.encode(format))  # Recebendo mensagem do servidor
+
+        # Recebe o procedimento como parâmetro ou via rede (sem usar input())
+        procedure = "calculadora"  # Exemplo de valor passado diretamente
+        client.send(procedure.encode(format))
+
         while True:
-            message = client.recv(size).decode(
-                format
-            )  # Enviando expressão para o servidor
+            message = client.recv(size).decode(format)
             print(f"Message from server: {message}")
 
             if message == "Awaiting expression...":
-                expression = input("Enter your expression: ")
-                expression = "Expression: " + expression
-                client.send(expression.encode(format))
-                print(f"Message Sent: {expression}")
+                expression = "5 + 3"  # Exemplo de expressão passada diretamente
+                client.send(f"Expression: {expression}".encode(format))
             elif "Invalid" in message:
                 break
             elif message.startswith("Result"):
                 print(f"{message}")
                 break
-        client.close()  # Fechando soquete do cliente ao finalizar
 
+        client.close()
 
 def par_block(block):
     """
