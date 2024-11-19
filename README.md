@@ -1,4 +1,4 @@
-# MiniparInterpreter | Compiladores e Reuso de Software
+# Minipar Interpreter | Compiladores e Reuso de Software
 
 ## 📖 Descrição
 
