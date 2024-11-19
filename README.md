@@ -10,10 +10,14 @@ O **MiniparInterpreter** é um interpretador para uma linguagem customizada, pro
 
 ## 👥 Integrantes
 
-    <center>
-Group:
+<center>
+
+
+  
     Matheus Ryan | Manoel Terceiro | Victor Hugo | Lucas Heron | Fernando Gabriel
  </center>
+
+<center>
 
 ## 📁 Estrutura do Projeto
 
