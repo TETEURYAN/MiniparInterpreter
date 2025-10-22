@@ -1,0 +1,31 @@
+name: minipar_compiler_x86_64
+product_type: compiler
+description: Compilador Minipar para arquitetura x86_64
+version: 1.0.0
+
+frontend:
+  enable_lexer: true
+  enable_parser: true
+  enable_semantic_checker: true
+  enable_ast_builder: true
+  enable_symbol_table: true
+
+backend:
+  backend_type: x86_64
+  enable_register_allocation: true
+  enable_optimization: true
+  optimization_level: basic
+  enable_debug_info: false
+  target_os: linux
+  target_arch: x86_64
+
+ir:
+  enable_ir_generation: true
+  enable_optimization: true
+  enable_constant_folding: true
+  enable_peephole_optimization: true
+  output_format: json
+
+output_file: output.s
+verbose: false
+debug: false

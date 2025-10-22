@@ -1,0 +1,20 @@
+name: minipar_interpreter
+product_type: interpreter
+description: Interpretador Minipar
+version: 1.0.0
+
+frontend:
+  enable_lexer: true
+  enable_parser: true
+  enable_semantic_checker: true
+  enable_ast_builder: true
+  enable_symbol_table: true
+
+interpreter:
+  enable_ast_execution: true
+  enable_ir_execution: false
+  enable_debug_mode: true
+  enable_tracing: false
+
+verbose: true
+debug: false
