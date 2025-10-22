@@ -1,0 +1,28 @@
+name: minipar_hybrid
+product_type: interpreter
+description: Interpretador Minipar com geração de IR
+version: 1.0.0
+
+frontend:
+  enable_lexer: true
+  enable_parser: true
+  enable_semantic_checker: true
+  enable_ast_builder: true
+  enable_symbol_table: true
+
+interpreter:
+  enable_ast_execution: true
+  enable_ir_execution: true
+  enable_debug_mode: true
+  enable_tracing: false
+
+ir:
+  enable_ir_generation: true
+  enable_optimization: true
+  enable_constant_folding: true
+  enable_peephole_optimization: true
+  output_format: json
+
+output_file: output.ir
+verbose: true
+debug: false
