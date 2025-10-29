@@ -14,7 +14,7 @@ O **MiniparInterpreter** é um interpretador para uma linguagem customizada, pro
 
 
   
-    Matheus Ryan | Manoel Terceiro | Victor Hugo | Lucas Heron | Fernando Gabriel
+    Matheus Ryan 
  </center>
 
 <center>
